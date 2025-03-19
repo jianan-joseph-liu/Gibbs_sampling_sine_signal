@@ -59,7 +59,7 @@ data_periodograms, freq, ft_data = periodogram(data, fs)
 
 # estimate the parameters for signal given the fixed PSD
 # function for trace plots
-def plot_trace(samples, labels=["a (Amplitude)", "f (Frequency)"]):
+def plot_trace(samples, iteration, labels=["a (Amplitude)", "f (Frequency)"]):
     n_params = samples.shape[1]
     fig, axes = plt.subplots(n_params, 1, figsize=(10, 6), sharex=True)
 
@@ -69,11 +69,13 @@ def plot_trace(samples, labels=["a (Amplitude)", "f (Frequency)"]):
         axes[i].set_ylabel(labels[i])
         
     axes[-1].set_xlabel("Iteration")
+    plt.suptitle(f"Trace plot (Gibbs Iteration {iteration})", y=1)
     plt.tight_layout()
+    plt.savefig(f"trace_plot{iteration:02d}.png")
     plt.show()
 
 # function for histogram plots
-def plot_histograms(samples, labels=["a (Amplitude)", "f (Frequency)"], bins=50):
+def plot_histograms(samples, iteration, labels=["a (Amplitude)", "f (Frequency)"], bins=50):
    
     n_params = samples.shape[1]
     fig, ax = plt.subplots(1, n_params, figsize=(12, 5), sharey=True)
@@ -83,8 +85,10 @@ def plot_histograms(samples, labels=["a (Amplitude)", "f (Frequency)"], bins=50)
         ax[i].set_title(f"Histogram of {labels[i]}")
         ax[i].set_xlabel(labels[i])
         ax[i].set_ylabel("Frequency" if i == 0 else "")
-
+        
+    plt.suptitle(f"Histogram plot (Gibbs Iteration {iteration})", y=1)
     plt.tight_layout()
+    plt.savefig(f"Histogram_plot{iteration:02d}.png")
     plt.show()
 
 
@@ -174,8 +178,8 @@ for gibbs_iter in range(n_gibbs):
     acceptance_rate = accepted / n_samples
     print(f"For Gibbs iteration {gibbs_iter+1}, the acceptance rate is {acceptance_rate:.2f}")
 
-    plot_trace(samples)
-    plot_histograms(samples)
+    plot_trace(samples, iteration = gibbs_iter+1)
+    plot_histograms(samples, iteration = gibbs_iter+1)
 
     # discard the burn in samples and create updated sine signal wave
     post_burn_in_samples  = samples[burn_in:, :]
