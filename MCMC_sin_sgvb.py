@@ -184,6 +184,7 @@ for gibbs_iter in range(n_gibbs):
     f_est = np.median(post_burn_in_samples[:,1])
 
     current_signal = a_est * np.sin(2 * np.pi * f_est * t)[:, np.newaxis]
+    initial_params = [a_est, f_est]
 
     # plot estimated psd for noise and estimated periodogram for signal
     fig, axes = plt.subplots(2, 2, figsize=(12, 12))
