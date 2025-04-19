@@ -10,10 +10,10 @@ import true_var
 import timeit
 
 
-true_A = 3.0              # Amplitude
+true_A = 2.0              # Amplitude
 true_f = 5.0             # Frequency in Hz
 
-n = 256
+n = 1024
 
 # Generate the true sine-wave signal
 fs = 100                
@@ -27,6 +27,13 @@ varCoef = np.array([[[0.5, 0.], [0., -0.3]], [[0., 0.], [0., -0.5]]])
 vmaCoef = np.array([[[1.,0.],[0.,1.]]])
 
 Simulation = true_var.VarmaSim(n=n)
+freq = (np.arange(1,np.floor_divide(n, 2) + 1, 1) / (n))
+spec_true = Simulation.calculateSpecMatrix(freq, varCoef, vmaCoef, sigma)
+for i in range(spec_true.shape[0]):
+    for j in range(spec_true.shape[-1]):
+        spec_true[i, j, j] = np.real(spec_true[i, j, j])
+        
+spec_true = spec_true/fs
         
 noise = Simulation.simData(varCoef, vmaCoef, sigma) 
 
@@ -103,7 +110,7 @@ def updateCov(X, covObj=np.nan):
 
 
 # Initial parameters
-initial_params = [3.5, 5.5]
+initial_params = [2.5, 5.5]
 d = len(initial_params)
 Id = (0.1**2) * np.identity(d) / d
 factor = (2.38**2) / d
@@ -111,7 +118,7 @@ beta = 0.05
 
 
 # set the initial positions 
-n_gibbs = 100       #number of iterations for Gibbs
+n_gibbs = 10000       #number of iterations for Gibbs
 current_signal = initial_params[0] * np.sin(2 * np.pi * initial_params[1] * t)[:, np.newaxis]
 current_params = np.array(initial_params)
 covObj = {'mean': current_params, 'cov': np.nan, 'n': 1}
@@ -119,10 +126,15 @@ covObj = {'mean': current_params, 'cov': np.nan, 'n': 1}
 accept_record = np.zeros(n_gibbs, dtype=int)
 inverse_psd_all = np.zeros((n_gibbs, n//2, 2, 2), dtype=np.complex128)
 gibbs_results = np.zeros((n_gibbs, len(initial_params)))
+
 # Gibbs sampling
+
+inverse_psd = np.linalg.inv(spec_true)
+residuals = data - current_signal
+
 for gibbs_iter in range(n_gibbs):
-    residuals = data - current_signal
     print('Current Gibbs iteration setp is: ', gibbs_iter)
+    '''
     Spec = inverse_spec_vi.SpecVI(residuals)
     result_list = Spec.runModel(N_delta=32, N_theta=32, lr_map=0.012, 
                                 ntrain_map=1500, sparse_op=False)
@@ -131,6 +143,7 @@ for gibbs_iter in range(n_gibbs):
     inverse_psd = result_list[0] * fs
 
     inverse_psd_all[gibbs_iter] = inverse_psd
+    '''
     #Whittle likelihood
     def log_prob(params):
         a, f = params
@@ -194,7 +207,7 @@ for gibbs_iter in range(n_gibbs):
     # Update covariance object for adaptive MH
     covObj = updateCov(X=current_params, covObj=covObj)
 
-    current_signal = current_params[0] * np.sin(2 * np.pi * current_params[1] * t)[:, np.newaxis]
+    #current_signal = current_params[0] * np.sin(2 * np.pi * current_params[1] * t)[:, np.newaxis]
 
     
 
