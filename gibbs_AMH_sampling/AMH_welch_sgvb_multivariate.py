@@ -3,8 +3,7 @@ os.chdir('D:/Gibbs_SGVB_test')
 from scipy import signal
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-import spec_vi_v2
+import inverse_spec_vi
 from scipy.stats import uniform
 import true_var
 from matplotlib.lines import Line2D
@@ -205,7 +204,7 @@ for gibbs_iter in range(n_gibbs):
         
     elif gibbs_iter % 2000 == 0:
         residuals = data - current_signal
-        Spec = spec_vi_v2.SpecVI(residuals)
+        Spec = inverse_spec_vi.SpecVI(residuals)
         result_list = Spec.runModel(N_delta=32, N_theta=32, lr_map=0.012, 
                                     ntrain_map=1500, sparse_op=False)
         
